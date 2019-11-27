@@ -1,4 +1,4 @@
 dist: xenial
 language: c
 
-install: ./install/dist-installer.sh
+script: ./install/dist-installer.sh
