@@ -170,7 +170,7 @@ install_luarocks() {
     cd luarocks-${LUAROCKS_VERSION} \
         && ./configure --with-lua=${LUA_JIT_DIR} --prefix=$prefix \
         && make \
-        && make install
+        && sudo make install
     LUAROCKS_BIN=$prefix/bin/luarocks
 }
 
@@ -180,21 +180,21 @@ install_apisix() {
     local tarball=apache-apisix-${APISIX_VERSION}-src.tar.gz
     local src_url=${APISIX_SRC_BASE_URL}/${numeric_version}/${tarball}
 
-    [ -e /tmp/${tarball} ] && rm -rf /tmp/apache-apisix*
+    [ -e /tmp/${tarball} ] && sudo rm -rf /tmp/apache-apisix*
     cd /tmp && curl -LO "$src_url"
 
     local untar_dir=$(tar -tf $tarball | head -n1 | cut -d'/' -f1)
     tar -xf $tarball
     cd $untar_dir
     local rockspec=$(ls rockspec | grep -E "apisix-${numeric_version}.*\\.rockspec" | tail -n1)
-    rm -rf $apisix_home && mkdir -p $apisix_home
-    luarocks install --lua-dir="${LUA_JIT_DIR}" "rockspec/$rockspec" --tree=/usr/local/apisix/deps --only-deps --local
-    cp -R conf $apisix_home/
-    cp -R lua $apisix_home/
-    cp -R bin $apisix_home/
+    sudo rm -rf $apisix_home && sudo mkdir -p $apisix_home
+    sudo luarocks install --lua-dir="${LUA_JIT_DIR}" "rockspec/$rockspec" --tree=/usr/local/apisix/deps --only-deps --local
+    sudo cp -R conf $apisix_home/
+    sudo cp -R lua $apisix_home/
+    sudo cp -R bin $apisix_home/
 
-    sed -i "1c\#\!/usr/bin/env ${LUA_JIT_DIR}/bin/luajit" ${apisix_home}/bin/apisix
-    rm -f /usr/bin/apisix && ln -s ${apisix_home}/bin/apisix /usr/bin/apisix
+    sudo sed -i "1c\#\!/usr/bin/env ${LUA_JIT_DIR}/bin/luajit" ${apisix_home}/bin/apisix
+    sudo rm -f /usr/bin/apisix && sudo ln -s ${apisix_home}/bin/apisix /usr/bin/apisix
 }
 
 ensure_luarocks3() {
