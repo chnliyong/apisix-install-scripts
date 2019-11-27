@@ -167,10 +167,10 @@ install_luarocks() {
     [ -e /tmp/luarocks-${LUAROCKS_VERSION}.tar.gz ] && rm -rf /tmp/luarocks-${LUAROCKS_VERSION}*
     cd /tmp && curl -LO "$LUAROCKS_TARBALL" \
         && tar -xf luarocks-${LUAROCKS_VERSION}.tar.gz
-    cd luarocks-${LUAROCKS_VERSION} \
-        && ./configure --with-lua=${LUA_JIT_DIR} --prefix=$prefix \
-        && make \
-        && sudo make install
+    cd luarocks-${LUAROCKS_VERSION}
+    ./configure --with-lua=${LUA_JIT_DIR} --prefix=$prefix
+    make
+    sudo make install
     LUAROCKS_BIN=$prefix/bin/luarocks
 }
 
