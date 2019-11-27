@@ -188,10 +188,15 @@ install_apisix() {
     cd $untar_dir
     local rockspec=$(ls rockspec | grep -E "apisix-${numeric_version}.*\\.rockspec" | tail -n1)
     sudo rm -rf $apisix_home && sudo mkdir -p $apisix_home
+    sudo mkdir -p /var/log/apisix /var/lib/apisix
     sudo luarocks install --lua-dir="${LUA_JIT_DIR}" "rockspec/$rockspec" --tree=/usr/local/apisix/deps --only-deps --local
     sudo cp -R conf $apisix_home/
     sudo cp -R lua $apisix_home/
     sudo cp -R bin $apisix_home/
+
+    # config the log path to /var/log/apisix
+    sudo sed -e '/^  error_log:/c\  error_log: \/var\/log\/apisix\/error.log' \
+        -e '/^    access_log:/c\    access_log: \/var\/log\/apisix\/access.log' ${apisix_home}/conf/config.yaml
 
     sudo sed -i "1c\#\!/usr/bin/env ${LUA_JIT_DIR}/bin/luajit" ${apisix_home}/bin/apisix
     sudo rm -f /usr/bin/apisix && sudo ln -s ${apisix_home}/bin/apisix /usr/bin/apisix
