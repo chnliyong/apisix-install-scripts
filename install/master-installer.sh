@@ -28,7 +28,7 @@ LUAROCKS_BIN=
 APISIX_VERSION="0.9-incubating"
 
 install_initialize() {
-    APISIX_SRC_BASE_URL=(https://dist.apache.org/repos/dist/release/incubator/apisix)
+    APISIX_ZIP_URL=(https://github.com/apache/incubator-apisix/archive/master.zip)
     LUAROCKS_TARBALL=(http://luarocks.org/releases/luarocks-${LUAROCKS_VERSION}.tar.gz)
   
     local bash_min_version="3.2.25"
@@ -176,19 +176,26 @@ install_luarocks() {
 
 install_apisix() {
     local apisix_home=/usr/local/apisix
-    local numeric_version=$(echo $APISIX_VERSION | cut -d'-' -f1)
-    local tarball=apache-apisix-${APISIX_VERSION}-src.tar.gz
-    local src_url=${APISIX_SRC_BASE_URL}/${numeric_version}/${tarball}
+    local apisix_archive=apache-apisix-master.zip
+    # local numeric_version=$(echo $APISIX_VERSION | cut -d'-' -f1)
+    # local tarball=apache-apisix-${APISIX_VERSION}-src.tar.gz
+    # local src_url=${APISIX_SRC_BASE_URL}/${numeric_version}/${tarball}
+    local src_url=${APISIX_ZIP_URL}
 
-    [ -e /tmp/${tarball} ] && sudo rm -rf /tmp/apache-apisix*
-    cd /tmp && curl -LO "$src_url"
+    rm -f /tmp/${apisix_archive}
+    curl -L -o /tmp/${apisix_archive} "$src_url"
+    local unzip_dir=$(unzip -l /tmp/${apisix_archive} | grep -E 'Makefile$' | cut -d'/' -f1 | awk '{print $NF}')
+    rm -rf /tmp/$unzip_dir
+    unzip -d /tmp /tmp/${apisix_archive}
 
-    local untar_dir=$(tar -tf $tarball | head -n1 | cut -d'/' -f1)
-    tar -xf $tarball
-    cd $untar_dir
-    local rockspec=$(ls rockspec | grep -E "apisix-${numeric_version}.*\\.rockspec" | tail -n1)
-    sudo rm -rf $apisix_home && sudo mkdir -p $apisix_home
+    cd /tmp/$unzip_dir
+    # local rockspec=$(ls rockspec | grep -E "apisix-${numeric_version}.*\\.rockspec" | tail -n1)
+    local rockspec=apisix-master-0.rockspec
+    sudo apisix stop
+    sudo rm -rf $apisix_home
+    sudo mkdir -p $apisix_home
     sudo mkdir -p /var/log/apisix /var/lib/apisix
+
     sudo luarocks install --lua-dir="${LUA_JIT_DIR}" "rockspec/$rockspec" --tree=/usr/local/apisix/deps --only-deps --local
     sudo cp -R conf $apisix_home/
     sudo cp -R lua $apisix_home/
